@@ -179,7 +179,7 @@ video.src = '/screen.mp4';
 video.loop = true;
 video.muted = true;
 video.playsInline = true;
-video.play();
+video.addEventListener('ended', () => { video.currentTime = 0; video.play(); });
 
 const videoTexture = new THREE.VideoTexture(video);
 videoTexture.colorSpace = THREE.SRGBColorSpace;
@@ -508,6 +508,7 @@ enterBtn.addEventListener('click', () => {
   }
   // ────────────────────────────────────────────────────────────
 
+  video.play();
   audio.play();
   playing = true;
   audioBtn.classList.add('playing');
