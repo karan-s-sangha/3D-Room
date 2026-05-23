@@ -7,6 +7,7 @@ An interactive 3D portfolio experience built with Three.js. A fully modelled and
 ## Preview
 
 > Orbit around the room using your mouse. Hover objects to see them scale up. Click project boards to view details. Double-click to go fullscreen.
+<img width="804" height="665" alt="image" src="https://github.com/user-attachments/assets/845c5313-9200-49f6-8ef9-85c8ac021c24" />
 
 ---
 
