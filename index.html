@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Karandeep Portfolio</title>
+  <link rel="icon" type="image/png" href="/three.png" />
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #050505;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      background: rgba(0,0,0,0.5);
+      padding: 12px 18px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      letter-spacing: 1px;
+    }
+
+    #audio-btn {
+      position: absolute;
+      bottom: 28px;
+      right: 28px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    #audio-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    #audio-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: white;
+    }
+
+    /* spinning ring visible only when playing */
+    #audio-btn::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: white;
+      border-right-color: rgba(255,255,255,0.3);
+      opacity: 0;
+      transition: opacity 0.3s;
+      animation: spin 1.8s linear infinite;
+    }
+
+    #audio-btn.playing::before {
+      opacity: 1;
+    }
+
+    /* bars pulse only when playing */
+    #bars rect {
+      transform-origin: bottom;
+      animation: none;
+    }
+
+    #audio-btn.playing #bars rect:nth-child(1) { animation: bar 0.9s ease-in-out -0.4s infinite alternate; }
+    #audio-btn.playing #bars rect:nth-child(2) { animation: bar 0.9s ease-in-out -0.2s infinite alternate; }
+    #audio-btn.playing #bars rect:nth-child(3) { animation: bar 0.9s ease-in-out  0.0s infinite alternate; }
+    #audio-btn.playing #bars rect:nth-child(4) { animation: bar 0.9s ease-in-out -0.3s infinite alternate; }
+
+    @keyframes bar {
+      from { transform: scaleY(0.25); }
+      to   { transform: scaleY(1); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Project modal ── */
+    #modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #modal {
+      position: relative;
+      width: 90%;
+      max-width: 880px;
+      background: linear-gradient(145deg, rgba(22, 27, 38, 0.97), rgba(13, 17, 23, 0.99));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 32px 64px rgba(0,0,0,0.6),
+        0 0 80px rgba(99, 102, 241, 0.08);
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* top gradient accent bar */
+    #modal-accent {
+      height: 3px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899, #6366f1);
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer {
+      to { background-position: -200% 0; }
+    }
+
+    /* ambient glow behind card */
+    #modal-glow {
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 260px;
+      height: 160px;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.25) 0%, transparent 70%);
+      pointer-events: none;
+      filter: blur(20px);
+    }
+
+    #modal-hero {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
+      display: none;
+    }
+
+    #modal-hero.has-image {
+      display: block;
+    }
+
+    #modal-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+
+    #modal-hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: linear-gradient(to bottom, transparent, rgba(13, 17, 23, 0.99));
+      pointer-events: none;
+    }
+
+    #modal-inner {
+      padding: 36px 52px 52px;
+    }
+
+    #modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    #modal-close:hover {
+      background: rgba(255,255,255,0.12);
+      color: white;
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    #modal-close svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+
+    #modal-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 16px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #a5b4fc;
+      text-transform: uppercase;
+    }
+
+    #modal-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #6366f1;
+      box-shadow: 0 0 6px #6366f1;
+    }
+
+    #modal-title {
+      margin: 0 0 10px;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 60%, rgba(255,255,255,0.5));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #modal-divider {
+      width: 40px;
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #6366f1, #ec4899);
+      margin-bottom: 18px;
+    }
+
+    #modal-desc {
+      margin: 0 0 32px;
+      font-size: 14px;
+      line-height: 1.75;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    #modal-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 26px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      box-shadow: 0 4px 24px rgba(99, 102, 241, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #modal-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    #modal-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5);
+    }
+
+    #modal-link:hover::before { opacity: 1; }
+
+    #modal-link svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s;
+    }
+
+    #modal-link:hover svg { transform: translateX(3px); }
+
+    /* ── Enter button (inside intro) ── */
+    #enter-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #enter-btn {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    #enter-btn:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.3);
+    }
+
+    #enter-btn::before,
+    #enter-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.18);
+      animation: ripple 2.4s ease-out infinite;
+    }
+    #enter-btn::after { animation-delay: 1.2s; }
+
+    @keyframes ripple {
+      0%   { transform: scale(1);   opacity: 0.5; }
+      100% { transform: scale(2);   opacity: 0; }
+    }
+
+    #enter-btn svg {
+      width: 28px;
+      height: 28px;
+      fill: white;
+      opacity: 0.9;
+      margin-left: 3px;
+    }
+
+    #enter-label {
+      color: rgba(255,255,255,0.35);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    /* ── Intro / loading screen ── */
+    #intro {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d1117;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #6366f1, transparent 70%);
+      top: -120px; left: -100px;
+      animation-duration: 12s;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, #8b5cf6, transparent 70%);
+      bottom: -100px; right: -80px;
+      animation-duration: 9s;
+      animation-delay: -4s;
+    }
+    .orb-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, #ec4899, transparent 70%);
+      top: 40%; left: 55%;
+      animation-duration: 14s;
+      animation-delay: -7s;
+      opacity: 0.2;
+    }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    #intro-content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      text-align: center;
+    }
+
+    #intro-ring-wrap {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin-bottom: 32px;
+    }
+
+    /* outer slow ring */
+    #intro-ring-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      animation: intro-spin-slow 8s linear infinite;
+    }
+
+    /* inner spinning arc */
+    #intro-ring-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: #6366f1;
+      border-right-color: #8b5cf6;
+      animation: intro-spin 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      filter: drop-shadow(0 0 8px rgba(99,102,241,0.8));
+    }
+
+    #intro-icon {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #intro-icon svg {
+      width: 40px;
+      height: 40px;
+      opacity: 0.9;
+      animation: intro-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes intro-spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes intro-spin-slow {
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes intro-pulse {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.08); }
+    }
+
+    #intro-title {
+      margin: 0 0 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 50%, rgba(255,255,255,0.4));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #intro-subtitle {
+      margin: 0 0 40px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+    }
+
+    #intro-bar-wrap {
+      width: 220px;
+      height: 3px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    #intro-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s linear infinite;
+      transition: width 0.3s ease;
+    }
+
+    #intro-pct {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.25);
+    }
+  </style>
+</head>
+<body>
+  <!-- Intro / loading screen -->
+  <div id="intro">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div id="intro-content">
+      <div id="intro-ring-wrap">
+        <div id="intro-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="14" width="28" height="20" rx="3" stroke="white" stroke-width="1.5"/>
+            <path d="M13 14V11a7 7 0 0 1 14 0v3" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <rect x="17" y="21" width="6" height="6" rx="1.5" fill="white" opacity="0.7"/>
+          </svg>
+        </div>
+      </div>
+      <h1 id="intro-title">My Portfolio</h1>
+      <p id="intro-subtitle">Interactive 3D Experience</p>
+      <div id="intro-progress-wrap">
+        <div id="intro-bar-wrap">
+          <div id="intro-bar"></div>
+        </div>
+        <p id="intro-pct">0%</p>
+      </div>
+      <div id="enter-wrap">
+        <button id="enter-btn">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+        <p id="enter-label">Click to Enter</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay">
+    Use Mouse to Look Around
+  </div>
+
+  <!-- Project modal -->
+  <div id="modal-backdrop">
+    <div id="modal">
+      <div id="modal-accent"></div>
+      <div id="modal-glow"></div>
+      <button id="modal-close">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div id="modal-hero">
+        <img id="modal-img" src="" alt="" />
+      </div>
+      <div id="modal-inner">
+        <p id="modal-tag">Project</p>
+        <h2 id="modal-title"></h2>
+        <div id="modal-divider"></div>
+        <p id="modal-desc"></p>
+        <a id="modal-link" href="#" target="_blank" rel="noopener">
+          View Project
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <button id="audio-btn" title="Toggle music">
+    <!-- music bars icon (shown while playing) -->
+    <svg id="bars" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2"  y="6"  width="3" height="12" rx="1"/>
+      <rect x="7"  y="3"  width="3" height="15" rx="1"/>
+      <rect x="12" y="8"  width="3" height="10" rx="1"/>
+      <rect x="17" y="5"  width="3" height="13" rx="1"/>
+    </svg>
+  </button>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
