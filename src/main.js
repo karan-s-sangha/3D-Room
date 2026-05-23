@@ -179,9 +179,24 @@ video.src = '/screen.mp4';
 video.loop = true;
 video.muted = true;
 video.playsInline = true;
+// Attach to DOM so the browser doesn't suspend it during fullscreen transitions
+Object.assign(video.style, { position: 'fixed', top: '-9999px', left: '-9999px', width: '1px', height: '1px', pointerEvents: 'none', opacity: '0' });
+document.body.appendChild(video);
+let videoStarted = false;
+video.pause = () => {};
 video.addEventListener('ended', () => { video.currentTime = 0; video.play(); });
 
-const videoTexture = new THREE.VideoTexture(video);
+// Use a canvas intermediary so the texture updates every frame via drawImage,
+// bypassing Three.js's requestVideoFrameCallback chain which breaks on fullscreen.
+const videoCanvas = document.createElement('canvas');
+videoCanvas.width = 1280;
+videoCanvas.height = 720;
+video.addEventListener('loadedmetadata', () => {
+  videoCanvas.width = video.videoWidth;
+  videoCanvas.height = video.videoHeight;
+});
+const videoCtx = videoCanvas.getContext('2d');
+const videoTexture = new THREE.CanvasTexture(videoCanvas);
 videoTexture.colorSpace = THREE.SRGBColorSpace;
 videoTexture.flipY = false;
 
@@ -252,10 +267,20 @@ loader.load('/room3.glb', (gltf) => {
   gltfRoot = gltf.scene;
 });
 
+// Recovery runs via setInterval so it survives hidden pages (rAF stops when hidden).
+setInterval(() => {
+  if (videoStarted && video.paused) video.play().catch(() => {});
+}, 250);
+
 // ── Render loop ────────────────────────────────────────────
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
+
+  if (videoStarted && video.readyState >= 2) {
+    videoCtx.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
+    videoTexture.needsUpdate = true;
+  }
 
   if (gltfRoot) {
     raycaster.setFromCamera(mouse, camera);
@@ -305,9 +330,15 @@ window.addEventListener('resize', () => {
 
 window.addEventListener('dblclick', () => {
   if (!document.fullscreenElement) {
-    renderer.domElement.requestFullscreen();
+    document.documentElement.requestFullscreen();
   } else {
     document.exitFullscreen();
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && videoStarted) {
+    video.play().catch(() => {});
   }
 });
 
@@ -508,6 +539,7 @@ enterBtn.addEventListener('click', () => {
   }
   // ────────────────────────────────────────────────────────────
 
+  videoStarted = true;
   video.play();
   audio.play();
   playing = true;
