@@ -383,6 +383,10 @@ modalClose.addEventListener('click', closeModal);
 backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
+const githubObjects   = new Set(['github']);
+const linkedinObjects = new Set(['Curve']);
+const gmailObjects    = new Set(['Curve002']);
+
 renderer.domElement.addEventListener('click', () => {
   if (!gltfRoot) return;
   raycaster.setFromCamera(mouse, camera);
@@ -390,7 +394,85 @@ renderer.domElement.addEventListener('click', () => {
   if (!intersects.length) return;
   let obj = intersects[0].object;
   while (obj.parent && obj.parent !== gltfRoot) obj = obj.parent;
-  if (projects[obj.name]) openModal(obj.name);
+  if (projects[obj.name])          openModal(obj.name);
+  if (githubObjects.has(obj.name))   openGithubCard();
+  if (linkedinObjects.has(obj.name)) openLinkedinCard();
+  if (gmailObjects.has(obj.name))    openGmailCard();
+});
+
+// ── GitHub card ────────────────────────────────────────────
+const githubCard  = document.getElementById('github-card');
+const githubClose = document.getElementById('github-close');
+
+function openGithubCard() {
+  githubCard.classList.add('open');
+  gsap.killTweensOf(githubCard);
+  gsap.to(githubCard, { opacity: 1, y: 0, duration: 0.55, ease: 'back.out(1.6)' });
+  gsap.from('#github-avatar',   { scale: 0.6, opacity: 0, duration: 0.5, ease: 'back.out(2)', delay: 0.1 });
+  gsap.from('#github-username', { opacity: 0, y: 10, duration: 0.35, ease: 'power2.out', delay: 0.2 });
+  gsap.from('#github-handle',   { opacity: 0, y: 10, duration: 0.35, ease: 'power2.out', delay: 0.27 });
+  gsap.from('#github-divider',  { scaleX: 0, duration: 0.4, ease: 'power2.out', delay: 0.32, transformOrigin: 'left' });
+  gsap.from('#github-visit',    { opacity: 0, y: 8, duration: 0.35, ease: 'power2.out', delay: 0.38 });
+}
+
+function closeGithubCard() {
+  gsap.to(githubCard, {
+    opacity: 0, y: '120%', duration: 0.4, ease: 'power3.in',
+    onComplete: () => githubCard.classList.remove('open'),
+  });
+}
+
+githubClose.addEventListener('click', closeGithubCard);
+
+// ── LinkedIn card ───────────────────────────────────────────
+const linkedinCard  = document.getElementById('linkedin-card');
+const linkedinClose = document.getElementById('linkedin-close');
+
+function openLinkedinCard() {
+  linkedinCard.classList.add('open');
+  gsap.killTweensOf(linkedinCard);
+  gsap.to(linkedinCard, { opacity: 1, y: 0, duration: 0.55, ease: 'back.out(1.6)' });
+  gsap.from('#linkedin-avatar',   { scale: 0.6, opacity: 0, duration: 0.5, ease: 'back.out(2)', delay: 0.1 });
+  gsap.from('#linkedin-username', { opacity: 0, y: 10, duration: 0.35, ease: 'power2.out', delay: 0.2 });
+  gsap.from('#linkedin-handle',   { opacity: 0, y: 10, duration: 0.35, ease: 'power2.out', delay: 0.27 });
+  gsap.from('#linkedin-divider',  { scaleX: 0, duration: 0.4, ease: 'power2.out', delay: 0.32, transformOrigin: 'left' });
+  gsap.from('#linkedin-visit',    { opacity: 0, y: 8, duration: 0.35, ease: 'power2.out', delay: 0.38 });
+}
+
+function closeLinkedinCard() {
+  gsap.to(linkedinCard, {
+    opacity: 0, y: '120%', duration: 0.4, ease: 'power3.in',
+    onComplete: () => linkedinCard.classList.remove('open'),
+  });
+}
+
+linkedinClose.addEventListener('click', closeLinkedinCard);
+
+// ── Gmail card ──────────────────────────────────────────────
+const gmailCard  = document.getElementById('gmail-card');
+const gmailClose = document.getElementById('gmail-close');
+
+function openGmailCard() {
+  gmailCard.classList.add('open');
+  gsap.killTweensOf(gmailCard);
+  gsap.to(gmailCard, { opacity: 1, y: 0, duration: 0.55, ease: 'back.out(1.6)' });
+  gsap.from('#gmail-avatar',   { scale: 0.6, opacity: 0, duration: 0.5, ease: 'back.out(2)', delay: 0.1 });
+  gsap.from('#gmail-username', { opacity: 0, y: 10, duration: 0.35, ease: 'power2.out', delay: 0.2 });
+  gsap.from('#gmail-address',  { opacity: 0, y: 10, duration: 0.35, ease: 'power2.out', delay: 0.27 });
+  gsap.from('#gmail-divider',  { scaleX: 0, duration: 0.4, ease: 'power2.out', delay: 0.32, transformOrigin: 'left' });
+  gsap.from('#gmail-visit',    { opacity: 0, y: 8, duration: 0.35, ease: 'power2.out', delay: 0.38 });
+}
+
+function closeGmailCard() {
+  gsap.to(gmailCard, {
+    opacity: 0, y: '120%', duration: 0.4, ease: 'power3.in',
+    onComplete: () => gmailCard.classList.remove('open'),
+  });
+}
+
+gmailClose.addEventListener('click', closeGmailCard);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeGithubCard(); closeLinkedinCard(); closeGmailCard(); }
 });
 
 // ── Audio ──────────────────────────────────────────────────
