@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import gsap from 'gsap';
 
 // ── Scene ──────────────────────────────────────────────────
@@ -72,10 +73,10 @@ function loadTex(path) {
   return t;
 }
 
-const mat1 = new THREE.MeshBasicMaterial({ map: loadTex('/texture1.png') });
-const mat2 = new THREE.MeshBasicMaterial({ map: loadTex('/texture2.png') });
-const mat3 = new THREE.MeshBasicMaterial({ map: loadTex('/texture3.png') });
-const mat4 = new THREE.MeshBasicMaterial({ map: loadTex('/texture4.png') });
+const mat1 = new THREE.MeshBasicMaterial({ map: loadTex('/texture1.jpg') });
+const mat2 = new THREE.MeshBasicMaterial({ map: loadTex('/texture2.jpg') });
+const mat3 = new THREE.MeshBasicMaterial({ map: loadTex('/texture3.jpg') });
+const mat4 = new THREE.MeshBasicMaterial({ map: loadTex('/texture4.jpg') });
 
 // Maps each baked texture atlas to its Blender object names
 const textureMap = [
@@ -132,9 +133,9 @@ function applyMaterial(gltfScene, nodes, material) {
 
 // ── Environment map (glass reflections) ───────────────────
 const envMap = new THREE.CubeTextureLoader(loadingManager).load([
-  '/glass_reflection/px.png', '/glass_reflection/nx.png',
-  '/glass_reflection/py.png', '/glass_reflection/ny.png',
-  '/glass_reflection/pz.png', '/glass_reflection/nz.png',
+  '/glass_reflection/px.jpg', '/glass_reflection/nx.jpg',
+  '/glass_reflection/py.jpg', '/glass_reflection/ny.jpg',
+  '/glass_reflection/pz.jpg', '/glass_reflection/nz.jpg',
 ]);
 
 // ── Raycaster (hover + click) ──────────────────────────────
@@ -198,7 +199,10 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // ── GLTF model ─────────────────────────────────────────────
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('/draco/');
 const loader = new GLTFLoader(loadingManager);
+loader.setDRACOLoader(dracoLoader);
 loader.load('/room3.glb', (gltf) => {
   const lights = [];
   gltf.scene.traverse(child => { if (child.isLight) lights.push(child); });
@@ -293,7 +297,11 @@ animate();
 
 // ── Window events ──────────────────────────────────────────
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  const aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = aspect;
+  // FOV stays at 28° always. On screens narrower than 16:9, zoom in via
+  // camera.zoom (scales the projection, doesn't change FOV or visible content).
+  camera.zoom = aspect < 16 / 9 ? Math.min((16 / 9) / aspect, 2.5) : 1;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
@@ -307,21 +315,21 @@ window.addEventListener('dblclick', () => {
 const projects = {
   Plane146: {
     title: 'Netflix Clone',
-    description: 'A full-stack Netflix clone with user authentication, movie browsing, and video playback.',
+    description: 'This project is a Netflix-inspired application designed to replicate key features of the popular streaming platform. It allows users to browse movies and TV shows, switch between languages and regions, and perform user authentication in an intuitive, responsive interface.',
     link: 'https://github.com/karan-s-sangha/Netflix-Clone',
-    image: '/Netflix.png',
+    image: '/Netflix.jpg',
   },
   Plane147: {
     title: 'Decked Out 2',
-    description: 'Description for the Decked Out 2 project.',
+    description: 'Decked Out 2 is an adventurous and thrilling game inspired by the original Minecraft mini-game, Decked Out. Created by a passionate team of developers and artists including Karan Sangha, Ingeun Hwang, and Khin Win',
     link: 'https://github.com/karan-s-sangha/Decked-Out-2',
-    image: '/Decked_Out_2.png',
+    image: '/Decked_Out_2.jpg',
   },
   Plane148: {
     title: 'Library Management',
     description: 'A library management system for tracking books, members, and borrowing history.',
     link: 'https://github.com/karan-s-sangha/Library_DataBase',
-    image: '/Library_Management.png',
+    image: '/Library_Management.jpg',
   },
 };
 

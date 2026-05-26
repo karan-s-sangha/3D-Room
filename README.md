@@ -13,7 +13,7 @@ An interactive 3D portfolio experience built with Three.js. A fully modelled and
 
 ## Features
 
-- **3D Room** — Custom Blender scene exported as a GLB with four baked texture atlases (UV channel 1)
+- **3D Room** — Custom Blender scene exported as a Draco-compressed GLB with four baked texture atlases (UV channel 1)
 - **Loading Screen** — Animated intro with progress bar that tracks all assets (textures, cubemap, GLB)
 - **Click to Enter** — User-triggered entry with a spring entrance animation for the entire room
 - **Orbit Camera** — Mouse-controlled camera with configurable polar/azimuth limits and zoom bounds
@@ -43,20 +43,21 @@ An interactive 3D portfolio experience built with Three.js. A fully modelled and
 ```
 3D Room/
 ├── public/
-│   ├── room3.glb                 # Blender scene (GLB)
-│   ├── texture1.png              # Baked atlas — walls, floors, desk
-│   ├── texture2.png              # Baked atlas — chair, keyboard, cables
-│   ├── texture3.png              # Baked atlas — plants, rug, monitors
-│   ├── texture4.png              # Baked atlas — lights, decorations
+│   ├── room3.glb                 # Blender scene (Draco-compressed GLB)
+│   ├── texture1.jpg              # Baked atlas — walls, floors, desk
+│   ├── texture2.jpg              # Baked atlas — chair, keyboard, cables
+│   ├── texture3.jpg              # Baked atlas — plants, rug, monitors
+│   ├── texture4.jpg              # Baked atlas — lights, decorations
 │   ├── screen.mp4                # Video played on the monitor mesh
 │   ├── Rubber_and_Brass.mp3      # Background music
+│   ├── draco/                    # Draco WASM decoder (served statically)
 │   ├── glass_reflection/         # Cubemap faces for glass reflections
-│   │   ├── px.png  nx.png
-│   │   ├── py.png  ny.png
-│   │   └── pz.png  nz.png
-│   ├── Netflix.png               # Project preview image
-│   ├── Decked_Out_2.png          # Project preview image
-│   ├── Library_Management.png    # Project preview image
+│   │   ├── px.jpg  nx.jpg
+│   │   ├── py.jpg  ny.jpg
+│   │   └── pz.jpg  nz.jpg
+│   ├── Netflix.jpg               # Project preview image
+│   ├── Decked_Out_2.jpg          # Project preview image
+│   ├── Library_Management.jpg    # Project preview image
 │   └── three.png                 # Favicon
 ├── src/
 │   └── main.js                   # All Three.js and UI logic
@@ -107,7 +108,7 @@ const projects = {
     title: 'Netflix Clone',
     description: 'Your description here.',
     link: 'https://github.com/your-repo',
-    image: '/Netflix.png',   // place image in public/
+    image: '/Netflix.jpg',   // place image in public/
   },
   Plane147: { ... },
   Plane148: { ... },
